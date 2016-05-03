@@ -30,6 +30,9 @@ public class Adapter extends
         mtList = list;
         mcontext = context;
     }
+    static {
+        System.loadLibrary("string-android-jni");
+    }
 
     @Override
     public Adapter.ViewHolder onCreateViewHolder(ViewGroup parent,
@@ -39,12 +42,14 @@ public class Adapter extends
         viewHolder = new ViewHolder(itemLayoutView);
         return viewHolder;
     }
+    public native int getHashFromJni(String url);
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, int position) {
         viewHolder.bindUrl(mtList.get(position).getUrl());
         viewHolder.name.setText(mtList.get(position).getLogin());
         viewHolder.url.setText(mtList.get(position).getUrl());
+        viewHolder.hash.setText(String.valueOf(getHashFromJni(mtList.get(position).getUrl())));
 
 
     }
@@ -60,12 +65,14 @@ public class Adapter extends
 
         public TextView name;
         public TextView url;
+        public TextView hash;
         private String urlToShare;
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             url = (TextView) itemLayoutView.findViewById(R.id.url);
+            hash = (TextView) itemLayoutView.findViewById(R.id.hash);
             itemLayoutView.setOnClickListener(this);
 
 

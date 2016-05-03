@@ -21,6 +21,12 @@
         android:layout_height="wrap_content"
         android:paddingBottom="2dip"
         android:text="Url" />
+    <TextView
+        android:id="@+id/hash"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="2dip"
+        android:text="Hash" />
 
 
 </LinearLayout>

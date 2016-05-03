@@ -34,13 +34,15 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG_ITEMS = "items";
     private static final String BASE_URL = "https://api.github.com/search/users?q=";
+
+
+
     public SearchView search;
     boolean found = false;
     private Adapter mAdapter;
     private Realm realm;
     private RecyclerView mRecyclerView;
     private TextView emptyView;
-
     private RealmConfiguration realmConfig;
     private List<User> list = new ArrayList<>();
     private SearchView.OnQueryTextListener listener = new SearchView.OnQueryTextListener() {
@@ -120,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
 
     @Override
     protected void onDestroy() {

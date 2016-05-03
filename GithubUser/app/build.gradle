@@ -10,6 +10,9 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        ndk {
+            moduleName = "string-android-jni"
+        }
     }
     buildTypes {
         release {
@@ -41,4 +44,5 @@ buildscript {
     }
 
 }
+
 apply plugin: 'realm-android'
