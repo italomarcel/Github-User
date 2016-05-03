@@ -9,7 +9,7 @@ import io.realm.annotations.PrimaryKey;
 public class User extends RealmObject {
     @PrimaryKey
     private int id;
-    private String url;
+    private String html_url;
     private String login;
 
     public int getId() {
@@ -21,11 +21,11 @@ public class User extends RealmObject {
     }
 
     public String getUrl() {
-        return url;
+        return html_url;
     }
 
     public void setUrl(String url) {
-        this.url = url;
+        this.html_url = url;
     }
 
     public String getLogin() {

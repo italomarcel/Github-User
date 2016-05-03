@@ -1,11 +1,16 @@
 package inc.mesa.githubuser.adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 
 import java.util.List;
 
@@ -17,8 +22,8 @@ public class Adapter extends
         RecyclerView.Adapter<Adapter.ViewHolder> {
 
     public Context mcontext;
+    public List<User> mtList;
     ViewHolder viewHolder;
-    private List<User> mtList;
 
     public Adapter(List<User> list, Context context) {
 
@@ -37,11 +42,13 @@ public class Adapter extends
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, int position) {
-
+        viewHolder.bindUrl(mtList.get(position).getUrl());
         viewHolder.name.setText(mtList.get(position).getLogin());
         viewHolder.url.setText(mtList.get(position).getUrl());
 
+
     }
+
 
     @Override
     public int getItemCount() {
@@ -49,19 +56,32 @@ public class Adapter extends
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public TextView name;
         public TextView url;
-
+        private String urlToShare;
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
-
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             url = (TextView) itemLayoutView.findViewById(R.id.url);
+            itemLayoutView.setOnClickListener(this);
 
 
+        }
+
+        public void bindUrl(String url) {
+            urlToShare = url;
+        }
+
+        @Override
+        public void onClick(View v) {
+            ShareLinkContent content = new ShareLinkContent.Builder()
+                    .setContentUrl(Uri.parse(urlToShare))
+                    .build();
+            ShareDialog shareDialog = new ShareDialog((Activity) v.getContext());
+            shareDialog.show(content, ShareDialog.Mode.AUTOMATIC);
         }
     }
 

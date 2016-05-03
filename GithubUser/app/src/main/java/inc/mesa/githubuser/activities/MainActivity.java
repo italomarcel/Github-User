@@ -1,9 +1,9 @@
 package inc.mesa.githubuser.activities;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.WorkerThread;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.facebook.FacebookSdk;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,7 +30,7 @@ import io.realm.RealmConfiguration;
 import io.realm.Sort;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG_ITEMS = "items";
     private static final String BASE_URL = "https://api.github.com/search/users?q=";
@@ -82,12 +84,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_main);
         search = (SearchView) findViewById(R.id.search);
         search.setOnQueryTextListener(listener);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         emptyView = (TextView) findViewById(R.id.empty_view);
-        realmConfig = new RealmConfiguration.Builder(getApplicationContext()).build();
+        realmConfig = new RealmConfiguration.Builder(getApplicationContext()).deleteRealmIfMigrationNeeded().build();
         realm = Realm.getInstance(realmConfig);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -102,10 +105,10 @@ public class MainActivity extends Activity {
         if (json != null) {
             try {
                 JSONObject jsonObj = new JSONObject(json);
-                JSONArray students = jsonObj.getJSONArray(TAG_ITEMS);
+                JSONArray jsonArray = jsonObj.getJSONArray(TAG_ITEMS);
                 Realm realm = Realm.getInstance(realmConfig);
                 realm.beginTransaction();
-                realm.createOrUpdateObjectFromJson(User.class, students.getJSONObject(0));
+                realm.createOrUpdateObjectFromJson(User.class, jsonArray.getJSONObject(0));
                 realm.commitTransaction();
                 realm.close();
             } catch (Exception e) {
@@ -133,6 +136,7 @@ public class MainActivity extends Activity {
             emptyView.setVisibility(View.GONE);
         }
     }
+
 
     private class GetUser extends AsyncTask<String, Void, Void> {
 
@@ -168,4 +172,5 @@ public class MainActivity extends Activity {
         }
 
     }
+
 }

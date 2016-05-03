@@ -4,4 +4,6 @@
     <string name="title_activity_splash">Splash</string>
     <string name="search_here">Search here</string>
     <string name="empty_list">Empty list</string>
+    <string name="facebook_app_id">287516784697155</string>
+
 </resources>
