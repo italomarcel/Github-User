@@ -9,28 +9,31 @@ import inc.mesa.githubuser.R;
 
 
 public class SplashActivity extends Activity {
+    Handler handler = new Handler();
+    Runnable runnable = new Runnable() {
 
-    // Splash screen timer
-    private static int SPLASH_TIME_OUT = 3000;
+
+        @Override
+        public void run() {
+            Intent i = new Intent(SplashActivity.this, MainActivity.class);
+            startActivity(i);
+            finish();
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        new Handler().postDelayed(new Runnable() {
+        handler.postDelayed(runnable
+                , 3000);
+    }
 
-			/*
-             * Showing splash screen with a timer. This will be useful when you
-			 * want to show case your app logo / company
-			 */
-
-            @Override
-            public void run() {
-                Intent i = new Intent(SplashActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            }
-        }, SPLASH_TIME_OUT);
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        handler.removeCallbacks(runnable);
     }
 }
 
