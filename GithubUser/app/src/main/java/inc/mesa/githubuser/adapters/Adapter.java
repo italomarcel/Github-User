@@ -21,11 +21,11 @@ public class Adapter extends
         RecyclerView.Adapter<Adapter.ViewHolder> {
 
 
-    private List<User> mtList;
+    private List<User> userList;
 
     public Adapter(List<User> list) {
 
-        mtList = list;
+        userList = list;
     }
 
     @Override
@@ -40,10 +40,10 @@ public class Adapter extends
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, int position) {
-        viewHolder.bindUrl(mtList.get(position).getUrl());
-        viewHolder.name.setText(mtList.get(position).getLogin());
-        viewHolder.url.setText(mtList.get(position).getUrl());
-        viewHolder.hash.setText(String.valueOf(getHashFromJni(mtList.get(position).getUrl())));
+        viewHolder.bindUrl(userList.get(position).getUrl());
+        viewHolder.name.setText(userList.get(position).getLogin());
+        viewHolder.url.setText(userList.get(position).getUrl());
+        viewHolder.hash.setText(String.valueOf(getHashFromJni(userList.get(position).getUrl())));
 
 
     }
@@ -51,7 +51,7 @@ public class Adapter extends
 
     @Override
     public int getItemCount() {
-        return mtList.size();
+        return userList.size();
     }
 
 

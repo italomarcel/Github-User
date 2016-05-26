@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements TaskDelegate {
         @Override
         public boolean onQueryTextChange(String query) {
             list = realm.where(User.class).contains("login", query.toLowerCase()).findAll();
-            adapter = new Adapter(list);
             adapter.notifyDataSetChanged();
             return true;
 
@@ -55,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements TaskDelegate {
 
             if (list.size() == 0) {
                 list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
-                adapter = new Adapter(list);
                 adapter.notifyDataSetChanged();
                 GetUser asyncGetUser = new GetUser(MainActivity.this);
                 asyncGetUser.execute(query);
@@ -121,8 +119,8 @@ public class MainActivity extends AppCompatActivity implements TaskDelegate {
     @Override
     public void taskCompletionResult() {
         list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
-        adapter = new Adapter(list);
-        recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+        //the list can be empty
         showEmptyText();
 
     }
