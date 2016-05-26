@@ -9,8 +9,8 @@ import inc.mesa.githubuser.R;
 
 
 public class SplashActivity extends Activity {
-    Handler handler = new Handler();
-    Runnable runnable = new Runnable() {
+    private Handler handler = new Handler();
+    private Runnable runnable = new Runnable() {
 
 
         @Override

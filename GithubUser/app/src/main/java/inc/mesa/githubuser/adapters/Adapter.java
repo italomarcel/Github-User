@@ -1,7 +1,6 @@
 package inc.mesa.githubuser.adapters;
 
 import android.app.Activity;
-import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,27 +20,22 @@ import inc.mesa.githubuser.model.User;
 public class Adapter extends
         RecyclerView.Adapter<Adapter.ViewHolder> {
 
-    public Context mcontext;
-    public List<User> mtList;
-    ViewHolder viewHolder;
 
-    public Adapter(List<User> list, Context context) {
+    private List<User> mtList;
+
+    public Adapter(List<User> list) {
 
         mtList = list;
-        mcontext = context;
-    }
-    static {
-        System.loadLibrary("string-android-jni");
     }
 
     @Override
     public Adapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                  int viewType) {
         View itemLayoutView = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.list_item, null);
-        viewHolder = new ViewHolder(itemLayoutView);
-        return viewHolder;
+                R.layout.list_item, parent, false);
+        return new ViewHolder(itemLayoutView);
     }
+
     public native int getHashFromJni(String url);
 
     @Override
@@ -61,14 +55,14 @@ public class Adapter extends
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        public TextView name;
-        public TextView url;
-        public TextView hash;
+        TextView name;
+        TextView url;
+        TextView hash;
         private String urlToShare;
 
-        public ViewHolder(View itemLayoutView) {
+        ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
             name = (TextView) itemLayoutView.findViewById(R.id.name);
             url = (TextView) itemLayoutView.findViewById(R.id.url);
@@ -78,7 +72,7 @@ public class Adapter extends
 
         }
 
-        public void bindUrl(String url) {
+        void bindUrl(String url) {
             urlToShare = url;
         }
 

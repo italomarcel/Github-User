@@ -12,22 +12,22 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class WebRequest {
+class WebRequest {
 
-    public final static int GET = 1;
-    public final static int POST = 2;
+    final static String GET = "GET";
+    //public final static String POST = "POST";
 
-    public WebRequest() {
+    WebRequest() {
 
     }
 
 
-    public String makeWebServiceCall(String url, String name, int requestmethod) {
+    String makeWebServiceCall(String url, String name, String requestmethod) {
         return this.makeWebServiceCall(url, name, requestmethod, null);
     }
 
-    public String makeWebServiceCall(String urladdress, String name, int requestmethod,
-                                     HashMap<String, String> params) {
+    private String makeWebServiceCall(String urladdress, String name, String requestmethod,
+                                      HashMap<String, String> params) {
         URL url;
         String response = "";
         try {
@@ -37,11 +37,8 @@ public class WebRequest {
             conn.setReadTimeout(15000);
             conn.setConnectTimeout(15000);
             conn.setDoInput(true);
-            if (requestmethod == POST) {
-                conn.setRequestMethod("POST");
-            } else if (requestmethod == GET) {
-                conn.setRequestMethod("GET");
-            }
+            conn.setRequestMethod(requestmethod);
+
 
             if (params != null) {
                 OutputStream os = conn.getOutputStream();

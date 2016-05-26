@@ -1,22 +1,20 @@
 package inc.mesa.githubuser.activities;
 
-import android.os.AsyncTask;
+import android.app.SearchManager;
+import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.WorkerThread;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.util.Log;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.FacebookSdk;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,60 +22,45 @@ import java.util.List;
 import inc.mesa.githubuser.R;
 import inc.mesa.githubuser.adapters.Adapter;
 import inc.mesa.githubuser.model.User;
-import inc.mesa.githubuser.utils.WebRequest;
+import inc.mesa.githubuser.utils.GetUser;
+import inc.mesa.githubuser.utils.TaskDelegate;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.Sort;
 
 
-public class MainActivity extends AppCompatActivity {
-
-    private static final String TAG_ITEMS = "items";
-    private static final String BASE_URL = "https://api.github.com/search/users?q=";
+public class MainActivity extends AppCompatActivity implements TaskDelegate {
 
 
+    static {
+        System.loadLibrary("string-android-jni");
+    }
 
-    public SearchView search;
-    boolean found = false;
-    private Adapter mAdapter;
+    private Adapter adapter;
     private Realm realm;
-    private RecyclerView mRecyclerView;
+    private RecyclerView recyclerView;
     private TextView emptyView;
-    private RealmConfiguration realmConfig;
     private List<User> list = new ArrayList<>();
     private SearchView.OnQueryTextListener listener = new SearchView.OnQueryTextListener() {
         @Override
         public boolean onQueryTextChange(String query) {
-            query = query.toLowerCase();
-
-            final List<User> filteredList = new ArrayList<>();
-
-            for (int i = 0; i < list.size(); i++) {
-
-                final String text = list.get(i).getLogin().toLowerCase();
-                if (text.contains(query)) {
-                    filteredList.add(list.get(i));
-                    found = true;
-                } else {
-                    found = false;
-                }
-            }
-
-            mAdapter = new Adapter(filteredList, MainActivity.this);
-            mRecyclerView.setAdapter(mAdapter);
-            mAdapter.notifyDataSetChanged();
+            list = realm.where(User.class).contains("login", query.toLowerCase()).findAll();
+            adapter = new Adapter(list);
+            adapter.notifyDataSetChanged();
             return true;
 
         }
 
         public boolean onQueryTextSubmit(String query) {
 
-            if (!found) {
-                mAdapter = new Adapter(list, MainActivity.this);
-                mRecyclerView.setAdapter(mAdapter);
-                mAdapter.notifyDataSetChanged();
-
-                new GetUser().execute(query);
+            if (list.size() == 0) {
+                list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
+                adapter = new Adapter(list);
+                adapter.notifyDataSetChanged();
+                GetUser asyncGetUser = new GetUser(MainActivity.this);
+                asyncGetUser.execute(query);
+                Snackbar.make(recyclerView, R.string.snack, Snackbar.LENGTH_SHORT)
+                        .show();
             }
             return false;
         }
@@ -88,41 +71,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_main);
-        search = (SearchView) findViewById(R.id.search);
-        search.setOnQueryTextListener(listener);
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        //toolbar for custom layout and search
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         emptyView = (TextView) findViewById(R.id.empty_view);
-        realmConfig = new RealmConfiguration.Builder(getApplicationContext()).deleteRealmIfMigrationNeeded().build();
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getApplicationContext())
+                .deleteRealmIfMigrationNeeded().build();
         realm = Realm.getInstance(realmConfig);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
-        mAdapter = new Adapter(list, getApplicationContext());
-        mRecyclerView.setAdapter(mAdapter);
+        adapter = new Adapter(list);
+        recyclerView.setAdapter(adapter);
         showEmptyText();
     }
 
-    @WorkerThread
-    private void ParseJSON(String json) {
-        if (json != null) {
-            try {
-                JSONObject jsonObj = new JSONObject(json);
-                JSONArray jsonArray = jsonObj.getJSONArray(TAG_ITEMS);
-                Realm realm = Realm.getInstance(realmConfig);
-                realm.beginTransaction();
-                realm.createOrUpdateObjectFromJson(User.class, jsonArray.getJSONObject(0));
-                realm.commitTransaction();
-                realm.close();
-            } catch (Exception e) {
-                e.printStackTrace();
 
-            }
-        } else {
-            Log.e("ServiceHandler", "Couldn't get any data from the url");
-
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnQueryTextListener(listener);
+        return true;
     }
-
 
 
     @Override
@@ -133,48 +109,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void showEmptyText() {
         if (list.isEmpty()) {
-            mRecyclerView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
         } else {
-            mRecyclerView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
         }
     }
 
 
-    private class GetUser extends AsyncTask<String, Void, Void> {
-
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            Toast.makeText(MainActivity.this, "Executing on background...", Toast.LENGTH_SHORT).show();
-
-        }
-
-        @Override
-        protected Void doInBackground(String... arg0) {
-            WebRequest webreq = new WebRequest();
-            String name = arg0[0];
-
-            if (!TextUtils.isEmpty(name)) {
-                String jsonStr = webreq.makeWebServiceCall(BASE_URL, name, WebRequest.GET);
-                ParseJSON(jsonStr);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
-            mAdapter = new Adapter(list, getApplicationContext());
-            mRecyclerView.setAdapter(mAdapter);
-            showEmptyText();
-
-
-        }
+    @Override
+    public void taskCompletionResult() {
+        list = realm.allObjectsSorted(User.class, "id", Sort.DESCENDING);
+        adapter = new Adapter(list);
+        recyclerView.setAdapter(adapter);
+        showEmptyText();
 
     }
-
 }
